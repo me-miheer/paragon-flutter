@@ -90,9 +90,9 @@ class _SplashScreenState extends State<SplashScreen> {
 
       if (response != null) {
         if (jsonDecode(response)['task_status'] == "true") {
-          final SharedPreferences prefs = await SharedPreferences.getInstance();
-          final bool? loggedin = prefs.getBool('loggedin');
-          final String? serverkey = prefs.getString('serverkey');
+          final SharedPreferencesAsync asyncPrefs = SharedPreferencesAsync();
+          final bool? loggedin = await asyncPrefs.getBool('loggedin');
+          final String? serverkey = await asyncPrefs.getString('serverkey');
 
           Navigator.pushReplacement(
             context,

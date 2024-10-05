@@ -144,7 +144,7 @@ class _ServerScreenState extends State<ServerScreen> {
                                 if (response != null) {
                                   if (jsonDecode(response)['task_status'] == "true") {
 
-                                    final SharedPreferencesAsync asyncPrefs = SharedPreferencesAsync();
+                                    final SharedPreferencesAsync asyncPrefs = await SharedPreferencesAsync();
                                     await asyncPrefs.setString('server', jsonDecode(response)['location']);
                                     await asyncPrefs.setString("serverkey", jsonDecode(response)['accesskey']);
 
