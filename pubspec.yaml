@@ -41,6 +41,7 @@ dependencies:
   mobile_scanner: ^5.2.3
   qr_scanner_overlay: ^0.0.2
   url_launcher: ^6.3.0
+  dropdown_search: ^5.0.6 # CORRECT LOCATION AND INDENTATION
 
 dev_dependencies:
   flutter_test:
