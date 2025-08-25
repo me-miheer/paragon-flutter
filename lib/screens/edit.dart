@@ -181,7 +181,7 @@ class _EditScreenState extends State<EditScreen> {
     });
 
     final String _qrCheckerUrl =
-        "${dotenv.env['API_URL']}settings/appSizes.php?key=${widget.consumerProps!}";
+        "${dotenv.env['API_URL']}settings/appSizes.php?key=";
     var res = await getDataWithPost(_qrCheckerUrl, {});
 
     response =
@@ -351,23 +351,6 @@ class _EditScreenState extends State<EditScreen> {
                             _typeInput.text = value!;
                           });
                         },
-                      ),
-                      const SizedBox(height: 30,),
-                      TextFormField(
-                        controller: _consumerInput,
-                        obscureText: false,
-                        readOnly: true,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'This field cannot be empty'; // Error message
-                          }
-                          return null; // No error
-                        },
-                        decoration: const InputDecoration(
-                            border: OutlineInputBorder(),
-                            labelText: "Consumer",
-                            labelStyle: TextStyle(fontFamily: "Roboto-Regular"),
-                            errorStyle: TextStyle(fontFamily: "Roboto-Regular", color: Colors.red)),
                       ),
                       const SizedBox(height: 30,),
                       DropdownButtonFormField<String>(

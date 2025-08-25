@@ -101,10 +101,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
         backgroundColor: const Color(0xFFdcdaf5),
         actions: [
           ElevatedButton(onPressed: () async {
-            if(_formKey.currentState!.validate()){
-              setState(() {
-                _isLoading = true;
-              });
+              if(_formKey.currentState!.validate()){
+                setState(() {
+                  _isLoading = true;
+                });
 
               final String _createUserUrl = "${dotenv.env['API_URL']}auth/updateUser.php";
               var _body = {
