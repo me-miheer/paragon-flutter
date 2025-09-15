@@ -25,6 +25,8 @@ class _SignupScreenState extends State<SignupScreen> {
   TextEditingController _townInput = TextEditingController();
   TextEditingController _passwordInput = TextEditingController();
   TextEditingController _confirmPasswordInput = TextEditingController();
+  TextEditingController _retailType = TextEditingController();
+  final _retailTypeList = ["Retail", "Dealer"];
 
   void _creationError(String title, String desc){
     showModalBottomSheet<void>(
@@ -93,6 +95,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 "shop": _shopInput.text,
                 "town": _townInput.text,
                 "password": _passwordInput.text,
+                "retailType": _retailType.text
               };
 
               var _res = await getDataWithPost(_createUserUrl, _body);
@@ -100,6 +103,8 @@ class _SignupScreenState extends State<SignupScreen> {
               response = _res?.body;  // Store the response body for display or further processing
 
               if (response != null) {
+                print("-----------------------------");
+                print(response);
                 if (jsonDecode(response)['task_status'] == "true") {
                   setState(() {
                     _isLoading = false;
@@ -240,6 +245,8 @@ class _SignupScreenState extends State<SignupScreen> {
                     ),validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'This field cannot be empty'; // Error message
+                    }else if(value.length != 10){
+                      return 'Mobile number can be only 10 digits'; // Error message
                     }
                     return null; // No error
                   },
@@ -287,6 +294,40 @@ class _SignupScreenState extends State<SignupScreen> {
                   },
                     controller: _townInput,
                   ),SizedBox(height: 30,),
+                  DropdownButtonFormField<String>(
+                    decoration: const InputDecoration(
+                      labelText: 'Meet Type',
+                      labelStyle: TextStyle(fontFamily: "Roboto-Regular"),
+                      border:
+                      OutlineInputBorder(), // Adds the TextField-like border
+                      contentPadding:
+                      EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                    ),
+                    items: _retailTypeList.map((element) {
+                      return DropdownMenuItem<String>(
+                        value:
+                        element, // The value that will be passed when this item is selected
+                        child: Text(
+                          element,
+                          style:
+                          const TextStyle(fontFamily: "Roboto-Regular"),
+                        ), // The displayed text in the dropdown menu
+                      );
+                    }).toList(),
+                    isExpanded: true,
+                    validator: (value) {
+                      if (value == null) {
+                        return 'Please select a size'; // Error message
+                      }
+                      return null; // No error
+                    },
+                    onChanged: (String? value) {
+                      setState(() {
+                        _retailType.text = value!;
+                      });
+                    },
+                  ),
+                  SizedBox(height: 30,),
                   TextFormField(
                     obscureText: true,
                     decoration: const InputDecoration(

@@ -104,8 +104,11 @@ class _ScannerPageState extends State<ScannerPage> {
                         var res = await getDataWithPost(qrCheckerUrl, {
 
                         });
+                        print("------------------------------");
+                        print(res);
                         setState(() {
                           response = res?.body;  // Store the response body for display or further processing
+                          print(response);
                           _isLoading = false; // Hide the loader
                         });
 

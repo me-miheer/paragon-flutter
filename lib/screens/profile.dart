@@ -23,6 +23,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   TextEditingController _townInput = TextEditingController();
   TextEditingController _emailInput = TextEditingController();
   TextEditingController _mobileInput = TextEditingController();
+  TextEditingController _retailType = TextEditingController();
+  final _retailTypeList = ["Retail", "Dealer"];
 
   @override
   void initState() {
@@ -82,11 +84,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final SharedPreferencesAsync asyncPrefs = SharedPreferencesAsync();
     final String? usersData = await asyncPrefs.getString('user');
     var _userJson = jsonDecode(jsonDecode(usersData!));
+    print(_userJson);
     _nameInput.text = _userJson['name'];
     _shopNameInput.text = _userJson['shop'];
     _townInput.text = _userJson['town'];
     _emailInput.text = _userJson['email'];
     _mobileInput.text = _userJson['mobile'];
+    _retailType.text = _userJson['retailType'];
 
     setState(() {
       _isLoading = false;
@@ -112,6 +116,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 "email": _emailInput.text,
                 "mobile": _mobileInput.text,
                 "dealer": _emailInput.text,
+                "retailType": _retailType.text,
                 "shop": _shopNameInput.text,
                 "town": _townInput.text,
               };
@@ -269,6 +274,41 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         return null; // No error
                       },
                         controller: _townInput,
+                      ),
+                      SizedBox(height: 30,),
+                      DropdownButtonFormField<String>(
+                        value: _retailType.text,
+                        decoration: const InputDecoration(
+                          labelText: 'Meet Type',
+                          labelStyle: TextStyle(fontFamily: "Roboto-Regular"),
+                          border:
+                          OutlineInputBorder(), // Adds the TextField-like border
+                          contentPadding:
+                          EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                        ),
+                        items: _retailTypeList.map((element) {
+                          return DropdownMenuItem<String>(
+                            value:
+                            element, // The value that will be passed when this item is selected
+                            child: Text(
+                              element,
+                              style:
+                              const TextStyle(fontFamily: "Roboto-Regular"),
+                            ), // The displayed text in the dropdown menu
+                          );
+                        }).toList(),
+                        isExpanded: true,
+                        validator: (value) {
+                          if (value == null) {
+                            return 'Please select a size'; // Error message
+                          }
+                          return null; // No error
+                        },
+                        onChanged: (String? value) {
+                          setState(() {
+                            _retailType.text = value!;
+                          });
+                        },
                       )
                     ],
                   ),

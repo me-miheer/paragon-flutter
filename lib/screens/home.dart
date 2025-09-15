@@ -5,13 +5,13 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:paragon/apis/auth.dart';
 import 'package:paragon/extensions/loader.dart';
 import 'package:paragon/extensions/snackbar.dart';
-import 'package:paragon/screens/edit.dart';
 import 'package:paragon/screens/profile.dart';
 import 'package:paragon/screens/scanner.dart';
 import 'package:paragon/screens/server.dart';
 import 'package:paragon/screens/splash.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:paragon/screens/data_table.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -38,8 +38,7 @@ class _HomePageState extends State<HomePage> {
 
   var _lister = [];
 
-  void reloadApi(){
-    print("loading");
+  void reloadApi() {
     _firstLoad(true);
   }
 
@@ -71,28 +70,27 @@ class _HomePageState extends State<HomePage> {
     };
     var _res = await getDataWithPost(uri, _body);
     response = _res?.body;
-    print(_body);
 
-    if(response != null){
+    if (response != null) {
       var _json = List<Map>.from(jsonDecode(response)['data']);
       _analysis[0]["value"] = jsonDecode(response)['total_quantity'];
       _analysis[1]["value"] = jsonDecode(response)['total_set_quantity'];
       _analysis[2]["value"] = jsonDecode(response)['total_pair_quantity'];
       _analysis[3]["value"] = jsonDecode(response)['total_carton_quantity'];
-      if(jsonDecode(response)['message'] != "NoData"){
-        if(_json.isNotEmpty){
-          if(firstLoad){
+      if (jsonDecode(response)['message'] != "NoData") {
+        if (_json.isNotEmpty) {
+          if (firstLoad) {
             _lister = _json;
-          }else{
+          } else {
             _lister.addAll(_json);
           }
-        }else{
+        } else {
           showSnackBar(context, "No more data", "Ok");
         }
-      }else{
+      } else {
         _lister = [];
       }
-    }else{
+    } else {
       showSnackBar(context, "No data found", "Ok");
     }
 
@@ -111,38 +109,44 @@ class _HomePageState extends State<HomePage> {
     _userMobile.text = userJson['mobile'];
   }
 
-  void _logout(){
+  void _logout() {
     showDialog<String>(
-    context: context,
-    builder: (BuildContext context) => AlertDialog(
-      title: const Text('Logout?'),
-      content: const Text('This will logout you account on this device.'),
-      actions: <Widget>[
-        TextButton(
-          onPressed: () => Navigator.pop(context, 'Cancel'),
-          child: const Text('Cancel', style: TextStyle(fontFamily: "Roboto-Regular"),),
-        ),
-        TextButton(
-          onPressed: () async {
-            //   On sumit function
-            final SharedPreferencesAsync asyncPrefs =
-                SharedPreferencesAsync();
-            await asyncPrefs.remove("loggedin");
-            await asyncPrefs.remove('user');
-            Navigator.pop(context, 'OK'); // Close the dialog
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const SplashScreen()),
-            ); // Navigate to HomePage
-          },
-          child: const Text("Logout", style: TextStyle(fontFamily: "Roboto-Regular"),),
-        ),
-      ],
-    ),
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: const Text('Logout?'),
+        content: const Text('This will logout you account on this device.'),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.pop(context, 'Cancel'),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(fontFamily: "Roboto-Regular"),
+            ),
+          ),
+          TextButton(
+            onPressed: () async {
+              //   On sumit function
+              final SharedPreferencesAsync asyncPrefs =
+                  SharedPreferencesAsync();
+              await asyncPrefs.remove("loggedin");
+              await asyncPrefs.remove('user');
+              Navigator.pop(context, 'OK'); // Close the dialog
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const SplashScreen()),
+              ); // Navigate to HomePage
+            },
+            child: const Text(
+              "Logout",
+              style: TextStyle(fontFamily: "Roboto-Regular"),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  Future<void> _launchUrl(BuildContext context, String url)async{
+  Future<void> _launchUrl(BuildContext context, String url) async {
     final Uri uri = Uri.parse(url);
     // Ensure the Uri is valid and can be launched
     if (await canLaunchUrl(uri)) {
@@ -165,13 +169,15 @@ class _HomePageState extends State<HomePage> {
   void handleClick(String item) {
     switch (item) {
       case "Profile":
-        Navigator.push(context, MaterialPageRoute(builder: (context)=> ProfileScreen()));
+        Navigator.push(
+            context, MaterialPageRoute(builder: (context) => ProfileScreen()));
         break;
       case "Admin":
         _launchUrl(context, "${dotenv.env['API_URL']}admin/index.php");
         break;
       case "Export":
-        _launchUrl(context, "${dotenv.env['API_URL']}admin/foruser.php?id=${_serverKey.text}&mobile=${_userMobile.text}");
+        _launchUrl(context,
+            "${dotenv.env['API_URL']}admin/foruser.php?id=${_serverKey.text}&mobile=${_userMobile.text}");
         break;
       case "Logout":
         _logout();
@@ -181,160 +187,296 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text(
-            "Home",
-            style: TextStyle(fontFamily: "Roboto-Regular"),
-          ),
-          backgroundColor: const Color(0xFFdcdaf5),
-          actions: <Widget>[
-            OutlinedButton(
-                onPressed: () {
-                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => ServerScreen()));
-                },
-                child: Text(
-                  _serverName.text,
-                  style: const TextStyle(fontFamily: "Roboto-Regular"),
-                )),
-            PopupMenuButton<String>(
-              onSelected: (item) => handleClick(item),
-              itemBuilder: (context) => [
-                const PopupMenuItem<String>(
-                    value: "Profile",
-                    child: Text(
-                      'Profile',
-                      style: TextStyle(fontFamily: "Roboto-Regular"),
-                    )),
-                PopupMenuItem<String>(
-                    value: _userType.text == "admin" ? "Admin" : "Export",
-                    child: Text(
-                      _userType.text == "admin" ? "Admin" : "Export data",
-                      style: const TextStyle(fontFamily: "Roboto-Regular"),
-                    )),
-                const PopupMenuItem<String>(
-                    value: "Logout",
-                    child: Text(
-                      'Logout',
-                      style: TextStyle(fontFamily: "Roboto-Regular"),
-                    )),
-              ],
-            ),
-          ],
-          bottom: const TabBar(tabs: [
-            Tab(
+    return Scaffold(
+      appBar: AppBar(
+        title: SizedBox(
+          width: 100,
+          height: 50,
+          child: Image.asset("assets/images/download.png"),
+        ),
+        backgroundColor: const Color(0xFFdcdaf5),
+        actions: <Widget>[
+          OutlinedButton(
+              onPressed: () {
+                Navigator.pushReplacement(context,
+                    MaterialPageRoute(builder: (context) => ServerScreen()));
+              },
               child: Text(
-                "Articles",
-                style: TextStyle(fontFamily: "Roboto-Regular"),
+                _serverName.text,
+                style: const TextStyle(fontFamily: "Roboto-Regular"),
+              )),
+          PopupMenuButton<String>(
+            onSelected: (item) => handleClick(item),
+            itemBuilder: (context) => [
+              const PopupMenuItem<String>(
+                  value: "Profile",
+                  child: Text(
+                    'Profile',
+                    style: TextStyle(fontFamily: "Roboto-Regular"),
+                  )),
+              PopupMenuItem<String>(
+                  value: _userType.text == "admin" ? "Admin" : "Export",
+                  child: Text(
+                    _userType.text == "admin" ? "Admin" : "Export data",
+                    style: const TextStyle(fontFamily: "Roboto-Regular"),
+                  )),
+              const PopupMenuItem<String>(
+                  value: "Logout",
+                  child: Text(
+                    'Logout',
+                    style: TextStyle(fontFamily: "Roboto-Regular"),
+                  )),
+            ],
+          ),
+        ],
+      ),
+      body: Stack(
+        children: [
+          RefreshIndicator(
+            onRefresh: () async {
+              await _firstLoad(true);
+            },
+            child: Container(
+              color: const Color(0xFFdcdaf5),
+              child: ListView(
+                padding: const EdgeInsets.all(0),
+                children: [
+                  _buildSchemeTable(),
+                  const DetailTable(),
+                  const SizedBox(
+                    height: 30,
+                  )
+                ],
               ),
             ),
-            Tab(
-              child: Text(
-                "Overview",
-                style: TextStyle(fontFamily: "Roboto-Regular"),
-              ),
-            )
-          ]),
-        ),
-        body: Stack(
-          children: [
-            TabBarView(children: [
-              RefreshIndicator(
-                onRefresh: () async {
-                  _firstLoad(true);
-                },
-                child: ListView(
-                  children: _lister.isNotEmpty ? _lister.map((elements)=>SizedBox(
-                      width: double.infinity,
-                      child: TextButton(
-                        style: ElevatedButton.styleFrom(
-                            textStyle: const TextStyle(fontFamily: "Roboto-Regular"),
-                            shape: const RoundedRectangleBorder(
-                                borderRadius: BorderRadius.all(Radius.circular(3)))),
-                        onPressed: () async {
-
-                        },
-                        onLongPress: (){
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => EditScreen(
-                                elements['qr'].toString(),
-                                elements['consumer_size'].toString(),
-                                elements['type'].toString(),
-                                elements['quantity'].toString(),
-                                elements['id'].toString(),
-                                elements['consumer'].toString(),
-                                  reloadApi// Added consumer element
-                              ),
-                            ),
-                          );
-
-                        },
-                        child: ListTile(
-                          title: Text("${elements['qr']}", style: const TextStyle(fontFamily: "Roboto-Regular", fontWeight: FontWeight.bold),),
-                          subtitle: Text("${elements['consumer_size']} • ${elements['type']}", style: const TextStyle(fontFamily: "Roboto-Regular", color: Colors.grey),),
-                          trailing: Text("${elements['quantity']}", style: const TextStyle(fontFamily: "Roboto-Regular"),),
-                          leading: const CircleAvatar(
-                            child: Icon(Icons.folder_copy_outlined),
-                          ),
-                        ),
-                      ))).toList() : [
-                    Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: const Text(
-                          "No data found",
-                          style: TextStyle(fontFamily: "Roboto-Regular"),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              RefreshIndicator(
-                onRefresh: () async {
-                  _firstLoad(true);
-                },
-                child: ListView(
-                    children: _analysis
-                        .map((element) => ListTile(
-                              leading: Text(
-                                element['sr'].toString(),
-                                style:
-                                    const TextStyle(fontFamily: "Roboto-Regular"),
-                              ),
-                              title: Text(
-                                element['name'].toString(),
-                                style:
-                                    const TextStyle(fontFamily: "Roboto-Regular"),
-                              ),
-                              trailing: Text(
-                                element['value'].toString(),
-                                style: const TextStyle(
-                                    fontFamily: "Roboto-Regular",
-                                    fontWeight: FontWeight.bold),
-                              ),
-                            ))
-                        .toList()),
-              )
-            ]),
-            CustomLoader(isLoading: _isLoading)
-          ],
-        ),
-        floatingActionButton: FloatingActionButton.extended(
-          onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => const ScannerPage()));
-          },
-          label: const Text(
-            "Scan QR",
-            style: TextStyle(fontFamily: "Roboto-Regular"),
           ),
-          icon: const Icon(Icons.qr_code_scanner),
+          CustomLoader(isLoading: _isLoading),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          Navigator.push(context,
+              MaterialPageRoute(builder: (context) => const ScannerPage()));
+        },
+        label: const Text(
+          "Scan QR",
+          style: TextStyle(fontFamily: "Roboto-Regular"),
         ),
+        icon: const Icon(Icons.qr_code_scanner),
       ),
     );
   }
 }
+
+// Scheme Table
+Widget _buildSchemeTable() {
+  final headers = ["Total Qty", "Solea", "Vertex", "P-Toes", "Slickers"];
+  final rows = [
+    ["Set", "0", "0", "0", "0"],
+    ["Pair", "0", "0", "0", "0"],
+    ["Qty", "0", "0", "0", "0"],
+  ];
+
+  return Card(
+    margin: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+    elevation: 3,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Title
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+          decoration: const BoxDecoration(
+            color: Colors.teal,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(12),
+              topRight: Radius.circular(12),
+            ),
+          ),
+          child: const Text(
+            "Summary",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              fontSize: 16,
+            ),
+          ),
+        ),
+
+        // Table (stretch full width)
+        SizedBox(
+          width: double.infinity, // 👈 forces full width
+          child: DataTable(
+            headingRowColor: WidgetStateProperty.all(Colors.grey.shade200),
+            headingTextStyle: const TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+            dataTextStyle: const TextStyle(fontSize: 13),
+            columnSpacing: 12,
+            horizontalMargin: 12,
+            border: TableBorder(
+              horizontalInside:
+              BorderSide(color: Colors.grey.shade300, width: 1),
+            ),
+            columns: headers
+                .map(
+                  (h) => DataColumn(
+                label: Expanded(
+                  child: Text(
+                    h,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            )
+                .toList(),
+            rows: rows
+                .map(
+                  (row) => DataRow(
+                cells: row
+                    .map(
+                      (cell) => DataCell(
+                    Center(
+                      child: Text(
+                        cell,
+                        style: row.first == cell
+                            ? const TextStyle(
+                          fontWeight: FontWeight.bold,
+                        )
+                            : null,
+                      ),
+                    ),
+                  ),
+                )
+                    .toList(),
+              ),
+            )
+                .toList(),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+// Detail Table
+Widget _buildDetailTable() {
+  const data = [
+    ["EEVGI2131-BGE", "1201A", "1", "Scheme 1", "Carton"],
+    ["EEVGI2131-BGE", "0609B", "2", "Scheme 1", "Carton"],
+    ["EEVGI2131-BGE", "0901A", "2", "Scheme 1", "Carton"],
+    ["EEVGI2131-BGE", "0911A", "1", "Scheme 1", "Carton"],
+    ["EEVGI2131-BGE", "1201A", "1", "Scheme 1", "Carton"],
+    ["EEVGI2131-BGE", "0609B", "2", "Scheme 1", "Carton"],
+    ["EEVGI2131-BGE", "0901A", "2", "Scheme 1", "Carton"],
+    ["EEVGI2131-BGE", "0911A", "1", "Scheme 1", "Carton"],
+    ["EEVGI2131-BGE", "1201A", "1", "Scheme 1", "Carton"],
+    ["EEVGI2131-BGE", "0609B", "2", "Scheme 1", "Carton"],
+    ["EEVGI2131-BGE", "0901A", "2", "Scheme 1", "Carton"],
+    ["EEVGI2131-BGE", "0911A", "1", "Scheme 1", "Carton"],
+    ["EEVGI2131-BGE", "1201A", "1", "Scheme 1", "Carton"],
+    ["EEVGI2131-BGE", "0609B", "2", "Scheme 1", "Carton"],
+    ["EEVGI2131-BGE", "0901A", "2", "Scheme 1", "Carton"],
+    ["EEVGI2131-BGE", "0911A", "1", "Scheme 1", "Carton"],
+    ["EEVGI2131-BGE", "1201A", "1", "Scheme 1", "Carton"],
+    ["EEVGI2131-BGE", "0609B", "2", "Scheme 1", "Carton"],
+    ["EEVGI2131-BGE", "0901A", "2", "Scheme 1", "Carton"],
+    ["EEVGI2131-BGE", "0911A", "1", "Scheme 1", "Carton"],
+    ["EEVGI2131-BGE", "1201A", "1", "Scheme 1", "Carton"],
+    ["EEVGI2131-BGE", "0609B", "2", "Scheme 1", "Carton"],
+    ["EEVGI2131-BGE", "0901A", "2", "Scheme 1", "Carton"],
+    ["EEVGI2131-BGE", "0911A", "1", "Scheme 1", "Carton"],
+    ["EEVGI2131-BGE", "0609B", "2", "Scheme 1", "Carton"],
+    ["EEVGI2131-BGE", "0901A", "2", "Scheme 1", "Carton"],
+    ["EEVGI2131-BGE", "0911A", "1", "Scheme 1", "Carton"],
+    ["EEVGI2131-BGE", "1201A", "1", "Scheme 1", "Carton"],
+    ["EEVGI2131-BGE", "0609B", "2", "Scheme 1", "Carton"],
+    ["EEVGI2131-BGE", "0901A", "2", "Scheme 1", "Carton"],
+    ["EEVGI2131-BGE", "0911A", "1", "Scheme 1", "Carton"],
+    ["EEVGI2131-BGE", "1201A", "1", "Scheme 1", "Carton"],
+    ["EEVGI2131-BGE", "0609B", "2", "Scheme 1", "Carton"],
+    ["EEVGI2131-BGE", "0901A", "2", "Scheme 1", "Carton"],
+    ["EEVGI2131-BGE", "0911A", "1", "Scheme 1", "Carton"],
+    ["EEVGI2131-BGE", "1201A", "1", "Scheme 1", "Carton"],
+    ["EEVGI2131-BGE", "0609B", "2", "Scheme 1", "Carton"],
+    ["EEVGI2131-BGE", "0901A", "2", "Scheme 1", "Carton"],
+    ["EEVGI2131-BGE", "0911A", "1", "Scheme 1", "Carton"],
+    ["EEVGI2131-BGE", "1201A", "1", "Scheme 1", "Carton"],
+    ["EEVGI2131-BGE", "0609B", "2", "Scheme 1", "Carton"],
+    ["EEVGI2131-BGE", "0901A", "2", "Scheme 1", "Carton"],
+    ["EEVGI2131-BGE", "0911A", "1", "Scheme 1", "Carton"],
+    ["EEVGI2131-BGE", "1201A", "1", "Scheme 1", "Carton"],
+    ["EEVGI2131-BGE", "0609B", "2", "Scheme 1", "Carton"],
+    ["EEVGI2131-BGE", "0901A", "2", "Scheme 1", "Carton"],
+    ["EEVGI2131-BGE", "0911A", "1", "Scheme 1", "Carton"],
+    // other rows...
+  ];
+
+  final List<List<String>> filteredData = data
+      .map((row) => [
+    row[0], // ARTICLE
+    row[1], // SIZE
+    row[2], // QTY
+    row[4], // UNIT (skip scheme)
+  ])
+      .toList();
+
+  return Container(
+    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(0),
+      border: Border.all(color: Colors.grey.shade400),
+    ),
+    child: LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minWidth: constraints.maxWidth),
+            child: DataTable(
+              headingRowColor: WidgetStateProperty.all(Colors.redAccent),
+              headingTextStyle: const TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                fontSize: 14,
+              ),
+              dataTextStyle: const TextStyle(
+                fontSize: 13,
+                color: Colors.black87,
+              ),
+              columnSpacing: 24,
+              columns: const [
+                DataColumn(label: Text("ARTICLE")),
+                DataColumn(label: Text("SIZE")),
+                DataColumn(label: Text("QTY")),
+                DataColumn(label: Text("UNIT")),
+              ],
+              rows: filteredData
+                  .map(
+                    (row) => DataRow(
+                  cells: row
+                      .map(
+                        (cell) => DataCell(
+                      Text(cell),
+                    ),
+                  )
+                      .toList(),
+                ),
+              )
+                  .toList(),
+            ),
+          ),
+        );
+      },
+    ),
+  );
+}
+
+
+
+
+

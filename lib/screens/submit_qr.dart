@@ -70,7 +70,7 @@ class _SubmitScreenState extends State<SubmitScreen> {
     });
 
     final String _qrCheckerUrl =
-        "${dotenv.env['API_URL']}settings/appSizes.php?key=";
+        "${dotenv.env['API_URL']}settings/appSizes.php?key=${widget.article!}";
     var res = await getDataWithPost(_qrCheckerUrl, {});
 
     response =
@@ -133,12 +133,13 @@ class _SubmitScreenState extends State<SubmitScreen> {
                           "dealer": _userJson['dealer'] ?? "none",
                           "shop": _userJson['shop'],
                           "mobile": _userJson['mobile'],
+                          "retailType": _userJson['retailType'],
                           "type": _typeInput.text,
                           "town": _userJson['town'],
                           "consumer" : widget.gender,
                           "consumerSizes": consumerDataString,
                           "serverkey": _serverkey,
-                          "server": _serverkey
+                          "server": _server
                         });
 
                         setState(() {
@@ -374,18 +375,49 @@ class _SubmitScreenState extends State<SubmitScreen> {
                                   borderRadius:
                                   BorderRadius.all(Radius.circular(3)))),
                           onPressed: () {},
-                          child: ListTile(
-                            leading: const CircleAvatar(
-                              child: Icon(Icons.person),
-                            ),
-                            title: Text(_userName ?? "Unknown",
-                                style: const TextStyle(fontFamily: "Roboto-Regular")),
-                            subtitle: Text(
-                              _userType ?? "Unknown",
-                              style: const TextStyle(fontFamily: "Roboto-Regular"),
-                            ),
-                            trailing: const Icon(Icons.arrow_drop_down),
-                          ),
+                          child:Stack(
+                            children: [
+                              ListTile(
+                                leading: const CircleAvatar(
+                                  child: Icon(Icons.person),
+                                ),
+                                title: Text(
+                                  _userName ?? "Unknown",
+                                  style: const TextStyle(fontFamily: "Roboto-Regular"),
+                                ),
+                                subtitle: Text(
+                                  _userType ?? "Unknown",
+                                  style: const TextStyle(fontFamily: "Roboto-Regular"),
+                                ),
+                                trailing: const Icon(Icons.arrow_drop_down),
+                              ),
+
+                              // Banner on top-left of ListTile
+                              Positioned(
+                                top: 0,
+                                left: 0,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: Colors.blue, // banner color
+                                    borderRadius: const BorderRadius.only(
+                                      topLeft: Radius.circular(4),
+                                      bottomRight: Radius.circular(8),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    widget.gender, // your banner text
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                      fontFamily: "Roboto-Regular",
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          )
                         ),
                       ),
                       const SizedBox(
