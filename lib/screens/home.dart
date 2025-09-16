@@ -29,6 +29,18 @@ class _HomePageState extends State<HomePage> {
   final TextEditingController _serverKey = TextEditingController();
   final TextEditingController _userType = TextEditingController();
   final TextEditingController _userMobile = TextEditingController();
+  final TextEditingController total_set_quantity_solea = TextEditingController();
+  final TextEditingController total_pair_quantity_solea = TextEditingController();
+  final TextEditingController total_carton_quantity_solea = TextEditingController();
+  final TextEditingController total_set_quantity_slikers = TextEditingController();
+  final TextEditingController total_pair_quantity_slikers = TextEditingController();
+  final TextEditingController total_carton_quantity_slikers = TextEditingController();
+  final TextEditingController total_set_quantity_ptoes = TextEditingController();
+  final TextEditingController total_pair_quantity_ptoes = TextEditingController();
+  final TextEditingController total_carton_quantity_ptoes = TextEditingController();
+  final TextEditingController total_set_quantity_vertex = TextEditingController();
+  final TextEditingController total_pair_quantity_vertex = TextEditingController();
+  final TextEditingController total_carton_quantity_vertex = TextEditingController();
   final _analysis = [
     {"sr": 1, "name": "Total Quantity", "value": 0},
     {"sr": 2, "name": "Total Sets", "value": 0},
@@ -61,7 +73,7 @@ class _HomePageState extends State<HomePage> {
     var userJson = jsonDecode(jsonDecode(usersData!));
     _userType.text = userJson['user_type'];
     _userMobile.text = userJson['mobile'];
-    final String uri = "${dotenv.env['API_URL']}csv/fetchCsvApi.php";
+    final String uri = "${dotenv.env['API_URL']}csv/fetchCsvApiV2.php";
     var _body = {
       "serverkey": _serverKey.text,
       "page": _page.toString(),
@@ -74,16 +86,21 @@ class _HomePageState extends State<HomePage> {
     if (response != null) {
       var _json = List<Map>.from(jsonDecode(response)['data']);
       _analysis[0]["value"] = jsonDecode(response)['total_quantity'];
-      _analysis[1]["value"] = jsonDecode(response)['total_set_quantity'];
-      _analysis[2]["value"] = jsonDecode(response)['total_pair_quantity'];
-      _analysis[3]["value"] = jsonDecode(response)['total_carton_quantity'];
+      total_set_quantity_solea.text = jsonDecode(response)['total_set_quantity_solea'];
+      total_pair_quantity_solea.text = jsonDecode(response)['total_pair_quantity_solea'];
+      total_carton_quantity_solea.text = jsonDecode(response)['total_carton_quantity_solea'];
+      total_set_quantity_slikers.text = jsonDecode(response)['total_set_quantity_slikers'];
+      total_pair_quantity_slikers.text = jsonDecode(response)['total_pair_quantity_slikers'];
+      total_carton_quantity_slikers.text = jsonDecode(response)['total_carton_quantity_slikers'];
+      total_set_quantity_ptoes.text = jsonDecode(response)['total_set_quantity_ptoes'];
+      total_pair_quantity_ptoes.text = jsonDecode(response)['total_pair_quantity_ptoes'];
+      total_carton_quantity_ptoes.text = jsonDecode(response)['total_carton_quantity_ptoes'];
+      total_set_quantity_vertex.text = jsonDecode(response)['total_set_quantity_vertex'];
+      total_pair_quantity_vertex.text = jsonDecode(response)['total_pair_quantity_vertex'];
+      total_carton_quantity_vertex.text = jsonDecode(response)['total_carton_quantity_vertex'];
       if (jsonDecode(response)['message'] != "NoData") {
         if (_json.isNotEmpty) {
-          if (firstLoad) {
-            _lister = _json;
-          } else {
-            _lister.addAll(_json);
-          }
+          _lister = _json;
         } else {
           showSnackBar(context, "No more data", "Ok");
         }
@@ -241,8 +258,14 @@ class _HomePageState extends State<HomePage> {
               child: ListView(
                 padding: const EdgeInsets.all(0),
                 children: [
-                  _buildSchemeTable(),
-                  const DetailTable(),
+                  _buildSchemeTable([
+                    ["Set", total_set_quantity_solea.text, total_set_quantity_vertex.text, total_set_quantity_ptoes.text, total_set_quantity_slikers.text],
+                    ["Pair", total_pair_quantity_solea.text, total_pair_quantity_vertex.text, total_pair_quantity_ptoes.text, total_pair_quantity_slikers.text],
+                    ["Qty", total_carton_quantity_solea.text, total_carton_quantity_vertex.text, total_carton_quantity_ptoes.text, total_carton_quantity_slikers.text],
+                  ]),
+                  _lister.isNotEmpty
+                  ? DetailTable(List<Map<String, dynamic>>.from(_lister))
+                      : const Center(child: Text("No data available")),
                   const SizedBox(
                     height: 30,
                   )
@@ -269,13 +292,9 @@ class _HomePageState extends State<HomePage> {
 }
 
 // Scheme Table
-Widget _buildSchemeTable() {
+Widget _buildSchemeTable(final List<List<String>> _rows) {
   final headers = ["Total Qty", "Solea", "Vertex", "P-Toes", "Slickers"];
-  final rows = [
-    ["Set", "0", "0", "0", "0"],
-    ["Pair", "0", "0", "0", "0"],
-    ["Qty", "0", "0", "0", "0"],
-  ];
+  final rows = _rows;
 
   return Card(
     margin: const EdgeInsets.fromLTRB(16, 12, 16, 12),
