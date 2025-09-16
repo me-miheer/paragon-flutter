@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:paragon/apis/auth.dart';
 import 'package:paragon/screens/home.dart';
@@ -21,6 +22,85 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
     checkUpdates();
+  }
+
+  void showUpdateSheet(
+      String required, String url, bool? loggedin, String? serverkey) {
+    showModalBottomSheet<void>(
+      context: context,
+      isDismissible: false,
+      enableDrag: false,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+      ),
+      builder: (BuildContext context) {
+        return SizedBox(
+          height: 220,
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text(
+                  "Update Available",
+                  style: TextStyle(
+                    fontFamily: "Roboto-Regular",
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  "A new version of the app is available.\nPlease update to continue using all features.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontFamily: "Roboto-Regular",
+                    fontSize: 14,
+                    color: Colors.grey,
+                  ),
+                ),
+                const Spacer(),
+                Row(
+                  children: [
+                    if (required == "no")
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => serverkey != null
+                                    ? (loggedin != null && loggedin
+                                        ? const HomePage()
+                                        : const LoginScreen())
+                                    : ServerScreen(),
+                              ),
+                            );
+                          },
+                          child: const Text("Cancel"),
+                        ),
+                      ),
+                    if (required == "no") const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          // 👉 TODO: Add update logic (Play Store / App Store link)
+                          Navigator.pop(context);
+                        },
+                        child: const Text("Update"),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    ).whenComplete(() {
+        SystemNavigator.pop();
+    });
   }
 
   void noService() {
@@ -85,23 +165,33 @@ class _SplashScreenState extends State<SplashScreen> {
   Future<void> checkUpdates() async {
     try {
       var res = await getDataWithPost(
-          "${dotenv.env['API_URL']}settings/appAccess.php", {"Nodata": "Nodata"});
+          "${dotenv.env['API_URL']}settings/appAccess.php",
+          {"Nodata": "Nodata"});
       var response = res?.body;
 
       if (response != null) {
-        if (jsonDecode(response)['task_status'] == "true") {
+        final decoded = jsonDecode(response);
+        if (decoded['task_status'] == "true" &&
+            decoded['app_update'] != "false") {
           final SharedPreferencesAsync asyncPrefs = SharedPreferencesAsync();
           final bool? loggedin = await asyncPrefs.getBool('loggedin');
           final String? serverkey = await asyncPrefs.getString('serverkey');
-
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => serverkey != null
-                  ? (loggedin != null && loggedin ? const HomePage() : const LoginScreen())
-                  : ServerScreen(),
-            ),
-          );
+          if (decoded['app_update'] == "yes") {
+            print(decoded);
+            showUpdateSheet(decoded['app_update_need'],
+                decoded['app_update_url'], loggedin, serverkey);
+          } else {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => serverkey != null
+                    ? (loggedin != null && loggedin
+                        ? const HomePage()
+                        : const LoginScreen())
+                    : ServerScreen(),
+              ),
+            );
+          }
         } else {
           noService();
         }
@@ -116,15 +206,21 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SizedBox(
-        width: double.infinity,
-        height: double.infinity,
-        child: Center(
-          child: SizedBox(
-            width: 150,
-            height: 150,
-            child: Image.asset("assets/images/paragon_logo.png"),
+    return WillPopScope(
+      onWillPop: () async {
+        SystemNavigator.pop();
+        return false;
+      },
+      child: Scaffold(
+        body: SizedBox(
+          width: double.infinity,
+          height: double.infinity,
+          child: Center(
+            child: SizedBox(
+              width: 150,
+              height: 150,
+              child: Image.asset("assets/images/paragon_logo.png"),
+            ),
           ),
         ),
       ),
