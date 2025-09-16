@@ -9,6 +9,7 @@ import 'package:paragon/screens/home.dart';
 import 'package:paragon/screens/login.dart';
 import 'package:paragon/screens/server.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -22,6 +23,28 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
     checkUpdates();
+  }
+
+  final String appVersion = "2.4";
+
+  Future<void> _launchUrl(BuildContext context, String url) async {
+    final Uri uri = Uri.parse(url);
+    // Ensure the Uri is valid and can be launched
+    if (await canLaunchUrl(uri)) {
+      // Launch the URL using browser mode
+      await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication, // Ensures opening in the browser
+      );
+    } else {
+      // Show SnackBar if unable to open URL
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Unable to open the URL'),
+          action: SnackBarAction(label: 'Ok', onPressed: () {}),
+        ),
+      );
+    }
   }
 
   void showUpdateSheet(
@@ -65,6 +88,9 @@ class _SplashScreenState extends State<SplashScreen> {
                     if (required == "no")
                       Expanded(
                         child: OutlinedButton(
+                          style: ElevatedButton.styleFrom(
+                              foregroundColor: Colors.white,
+                              backgroundColor: Color(0xFF000000)),
                           onPressed: () {
                             Navigator.pop(context);
                             Navigator.pushReplacement(
@@ -84,9 +110,11 @@ class _SplashScreenState extends State<SplashScreen> {
                     if (required == "no") const SizedBox(width: 12),
                     Expanded(
                       child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                            foregroundColor: Colors.white,
+                            backgroundColor: Color(0xFF0056cd)),
                         onPressed: () {
-                          // 👉 TODO: Add update logic (Play Store / App Store link)
-                          Navigator.pop(context);
+                          _launchUrl(context, url);
                         },
                         child: const Text("Update"),
                       ),
@@ -99,7 +127,20 @@ class _SplashScreenState extends State<SplashScreen> {
         );
       },
     ).whenComplete(() {
+      if(required == "yes"){
         SystemNavigator.pop();
+      }else{
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => serverkey != null
+                ? (loggedin != null && loggedin
+                ? const HomePage()
+                : const LoginScreen())
+                : ServerScreen(),
+          ),
+        );
+      }
     });
   }
 
@@ -176,8 +217,7 @@ class _SplashScreenState extends State<SplashScreen> {
           final SharedPreferencesAsync asyncPrefs = SharedPreferencesAsync();
           final bool? loggedin = await asyncPrefs.getBool('loggedin');
           final String? serverkey = await asyncPrefs.getString('serverkey');
-          if (decoded['app_update'] == "yes") {
-            print(decoded);
+          if (decoded['app_update'] == "yes" && decoded['app_version'] != appVersion) {
             showUpdateSheet(decoded['app_update_need'],
                 decoded['app_update_url'], loggedin, serverkey);
           } else {

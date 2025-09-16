@@ -103,8 +103,6 @@ class _SignupScreenState extends State<SignupScreen> {
               response = _res?.body;  // Store the response body for display or further processing
 
               if (response != null) {
-                print("-----------------------------");
-                print(response);
                 if (jsonDecode(response)['task_status'] == "true") {
                   setState(() {
                     _isLoading = false;

@@ -84,7 +84,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final SharedPreferencesAsync asyncPrefs = SharedPreferencesAsync();
     final String? usersData = await asyncPrefs.getString('user');
     var _userJson = jsonDecode(jsonDecode(usersData!));
-    print(_userJson);
     _nameInput.text = _userJson['name'];
     _shopNameInput.text = _userJson['shop'];
     _townInput.text = _userJson['town'];
