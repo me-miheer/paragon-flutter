@@ -209,7 +209,7 @@ class _EditScreenState extends State<EditScreen> {
                                                   fontSize: 25),
                                             ),
                                             const Text(
-                                              "Article submitted successfully.",
+                                              "Article Updated successfully.",
                                               style: TextStyle(
                                                   fontFamily: "Roboto-Regular",
                                                   fontSize: 12,

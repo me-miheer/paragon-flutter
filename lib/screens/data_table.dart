@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'edit.dart';
 
 class DetailTable extends StatefulWidget {
-  final List<Map<String, dynamic>> data; // ✅ Accept dynamic data
+  final List<Map<String, dynamic>> data;
   const DetailTable(this.data, {super.key});
 
   @override
@@ -10,12 +11,11 @@ class DetailTable extends StatefulWidget {
 
 class _DetailTableState extends State<DetailTable> {
   final TextEditingController _searchController = TextEditingController();
-
   String _searchQuery = "";
 
   @override
   Widget build(BuildContext context) {
-    // Apply search filter only
+    // 🔎 Apply search filter
     final List<Map<String, dynamic>> filteredData = widget.data.where((row) {
       return row.values.any((cell) =>
           cell.toString().toLowerCase().contains(_searchQuery.toLowerCase()));
@@ -23,7 +23,7 @@ class _DetailTableState extends State<DetailTable> {
 
     return Column(
       children: [
-        // 🔎 Search box only
+        // 🔍 Search box
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: TextField(
@@ -39,9 +39,7 @@ class _DetailTableState extends State<DetailTable> {
               ),
             ),
             onChanged: (value) {
-              setState(() {
-                _searchQuery = value;
-              });
+              setState(() => _searchQuery = value);
             },
           ),
         ),
@@ -55,10 +53,11 @@ class _DetailTableState extends State<DetailTable> {
             borderRadius: BorderRadius.circular(8),
           ),
           child: SingleChildScrollView(
-            scrollDirection: Axis.vertical, // only vertical scroll
+            scrollDirection: Axis.vertical,
             child: SizedBox(
-              width: double.infinity, // ✅ full available width
+              width: double.infinity,
               child: DataTable(
+                showCheckboxColumn: false, // ✅ hides header checkbox
                 headingRowColor: WidgetStateProperty.all(Colors.teal.shade600),
                 headingTextStyle: const TextStyle(
                   fontWeight: FontWeight.bold,
@@ -72,18 +71,27 @@ class _DetailTableState extends State<DetailTable> {
                   DataColumn(label: Text("QTY")),
                   DataColumn(label: Text("UNIT")),
                 ],
-                rows: filteredData
-                    .map(
-                      (row) => DataRow(
+                rows: filteredData.map((row) {
+                  return DataRow(
+                    onSelectChanged: (_) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => EditScreen(
+                            row["qr"],            // ✅ Pass article
+                            row["consumer"], // ✅ Pass size (or any extra)
+                          ),
+                        ),
+                      );
+                    },
                     cells: [
                       DataCell(Text(row["qr"] ?? "")),
                       DataCell(Text(row["consumer_size"] ?? "")),
                       DataCell(Text(row["quantity"] ?? "")),
                       DataCell(Text(row["type"] ?? "")),
                     ],
-                  ),
-                )
-                    .toList(),
+                  );
+                }).toList(),
               ),
             ),
           ),
@@ -92,4 +100,3 @@ class _DetailTableState extends State<DetailTable> {
     );
   }
 }
-
