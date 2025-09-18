@@ -261,7 +261,7 @@ class _HomePageState extends State<HomePage> {
                   _buildSchemeTable([
                     ["Set", total_set_quantity_solea.text, total_set_quantity_vertex.text, total_set_quantity_ptoes.text, total_set_quantity_slikers.text],
                     ["Pair", total_pair_quantity_solea.text, total_pair_quantity_vertex.text, total_pair_quantity_ptoes.text, total_pair_quantity_slikers.text],
-                    ["Qty", total_carton_quantity_solea.text, total_carton_quantity_vertex.text, total_carton_quantity_ptoes.text, total_carton_quantity_slikers.text],
+                    ["Carton", total_carton_quantity_solea.text, total_carton_quantity_vertex.text, total_carton_quantity_ptoes.text, total_carton_quantity_slikers.text],
                   ]),
                   _lister.isNotEmpty
                   ? DetailTable(List<Map<String, dynamic>>.from(_lister))
@@ -279,7 +279,7 @@ class _HomePageState extends State<HomePage> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           Navigator.push(context,
-              MaterialPageRoute(builder: (context) => const ScannerPage()));
+              MaterialPageRoute(builder: (context) => ScannerPage(_userMobile.text)));
         },
         label: const Text(
           "Scan QR",
@@ -380,121 +380,6 @@ Widget _buildSchemeTable(final List<List<String>> _rows) {
     ),
   );
 }
-
-// Detail Table
-Widget _buildDetailTable() {
-  const data = [
-    ["EEVGI2131-BGE", "1201A", "1", "Scheme 1", "Carton"],
-    ["EEVGI2131-BGE", "0609B", "2", "Scheme 1", "Carton"],
-    ["EEVGI2131-BGE", "0901A", "2", "Scheme 1", "Carton"],
-    ["EEVGI2131-BGE", "0911A", "1", "Scheme 1", "Carton"],
-    ["EEVGI2131-BGE", "1201A", "1", "Scheme 1", "Carton"],
-    ["EEVGI2131-BGE", "0609B", "2", "Scheme 1", "Carton"],
-    ["EEVGI2131-BGE", "0901A", "2", "Scheme 1", "Carton"],
-    ["EEVGI2131-BGE", "0911A", "1", "Scheme 1", "Carton"],
-    ["EEVGI2131-BGE", "1201A", "1", "Scheme 1", "Carton"],
-    ["EEVGI2131-BGE", "0609B", "2", "Scheme 1", "Carton"],
-    ["EEVGI2131-BGE", "0901A", "2", "Scheme 1", "Carton"],
-    ["EEVGI2131-BGE", "0911A", "1", "Scheme 1", "Carton"],
-    ["EEVGI2131-BGE", "1201A", "1", "Scheme 1", "Carton"],
-    ["EEVGI2131-BGE", "0609B", "2", "Scheme 1", "Carton"],
-    ["EEVGI2131-BGE", "0901A", "2", "Scheme 1", "Carton"],
-    ["EEVGI2131-BGE", "0911A", "1", "Scheme 1", "Carton"],
-    ["EEVGI2131-BGE", "1201A", "1", "Scheme 1", "Carton"],
-    ["EEVGI2131-BGE", "0609B", "2", "Scheme 1", "Carton"],
-    ["EEVGI2131-BGE", "0901A", "2", "Scheme 1", "Carton"],
-    ["EEVGI2131-BGE", "0911A", "1", "Scheme 1", "Carton"],
-    ["EEVGI2131-BGE", "1201A", "1", "Scheme 1", "Carton"],
-    ["EEVGI2131-BGE", "0609B", "2", "Scheme 1", "Carton"],
-    ["EEVGI2131-BGE", "0901A", "2", "Scheme 1", "Carton"],
-    ["EEVGI2131-BGE", "0911A", "1", "Scheme 1", "Carton"],
-    ["EEVGI2131-BGE", "0609B", "2", "Scheme 1", "Carton"],
-    ["EEVGI2131-BGE", "0901A", "2", "Scheme 1", "Carton"],
-    ["EEVGI2131-BGE", "0911A", "1", "Scheme 1", "Carton"],
-    ["EEVGI2131-BGE", "1201A", "1", "Scheme 1", "Carton"],
-    ["EEVGI2131-BGE", "0609B", "2", "Scheme 1", "Carton"],
-    ["EEVGI2131-BGE", "0901A", "2", "Scheme 1", "Carton"],
-    ["EEVGI2131-BGE", "0911A", "1", "Scheme 1", "Carton"],
-    ["EEVGI2131-BGE", "1201A", "1", "Scheme 1", "Carton"],
-    ["EEVGI2131-BGE", "0609B", "2", "Scheme 1", "Carton"],
-    ["EEVGI2131-BGE", "0901A", "2", "Scheme 1", "Carton"],
-    ["EEVGI2131-BGE", "0911A", "1", "Scheme 1", "Carton"],
-    ["EEVGI2131-BGE", "1201A", "1", "Scheme 1", "Carton"],
-    ["EEVGI2131-BGE", "0609B", "2", "Scheme 1", "Carton"],
-    ["EEVGI2131-BGE", "0901A", "2", "Scheme 1", "Carton"],
-    ["EEVGI2131-BGE", "0911A", "1", "Scheme 1", "Carton"],
-    ["EEVGI2131-BGE", "1201A", "1", "Scheme 1", "Carton"],
-    ["EEVGI2131-BGE", "0609B", "2", "Scheme 1", "Carton"],
-    ["EEVGI2131-BGE", "0901A", "2", "Scheme 1", "Carton"],
-    ["EEVGI2131-BGE", "0911A", "1", "Scheme 1", "Carton"],
-    ["EEVGI2131-BGE", "1201A", "1", "Scheme 1", "Carton"],
-    ["EEVGI2131-BGE", "0609B", "2", "Scheme 1", "Carton"],
-    ["EEVGI2131-BGE", "0901A", "2", "Scheme 1", "Carton"],
-    ["EEVGI2131-BGE", "0911A", "1", "Scheme 1", "Carton"],
-    // other rows...
-  ];
-
-  final List<List<String>> filteredData = data
-      .map((row) => [
-    row[0], // ARTICLE
-    row[1], // SIZE
-    row[2], // QTY
-    row[4], // UNIT (skip scheme)
-  ])
-      .toList();
-
-  return Container(
-    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(0),
-      border: Border.all(color: Colors.grey.shade400),
-    ),
-    child: LayoutBuilder(
-      builder: (context, constraints) {
-        return SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: ConstrainedBox(
-            constraints: BoxConstraints(minWidth: constraints.maxWidth),
-            child: DataTable(
-              headingRowColor: WidgetStateProperty.all(Colors.redAccent),
-              headingTextStyle: const TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-                fontSize: 14,
-              ),
-              dataTextStyle: const TextStyle(
-                fontSize: 13,
-                color: Colors.black87,
-              ),
-              columnSpacing: 24,
-              columns: const [
-                DataColumn(label: Text("ARTICLE")),
-                DataColumn(label: Text("SIZE")),
-                DataColumn(label: Text("QTY")),
-                DataColumn(label: Text("UNIT")),
-              ],
-              rows: filteredData
-                  .map(
-                    (row) => DataRow(
-                  cells: row
-                      .map(
-                        (cell) => DataCell(
-                      Text(cell),
-                    ),
-                  )
-                      .toList(),
-                ),
-              )
-                  .toList(),
-            ),
-          ),
-        );
-      },
-    ),
-  );
-}
-
 
 
 

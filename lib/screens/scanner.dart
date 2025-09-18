@@ -4,13 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:paragon/extensions/loader.dart';
+import 'package:paragon/screens/edit.dart';
 import 'package:paragon/screens/submit_qr.dart';
 import 'package:qr_scanner_overlay/qr_scanner_overlay.dart';
 
 import '../apis/auth.dart';
 
 class ScannerPage extends StatefulWidget {
-  const ScannerPage({super.key});
+  final String _mobile;
+  const ScannerPage(this._mobile, {super.key});
 
   @override
   State<ScannerPage> createState() => _ScannerPageState();
@@ -23,7 +25,7 @@ class _ScannerPageState extends State<ScannerPage> {
   dynamic response;
   final MobileScannerController _scannerController = MobileScannerController();
 
-  void _invalidQr(){
+  void _invalidQr() {
     showModalBottomSheet<void>(
       context: context,
       isDismissible: false,
@@ -35,12 +37,23 @@ class _ScannerPageState extends State<ScannerPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                const Expanded(child: Column(
+                const Expanded(
+                    child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Text("Invalid Article", style: TextStyle(fontFamily: "Roboto-Regular", fontSize: 25),),
-                    Text("Please contact to the administrator.", style: TextStyle(fontFamily: "Roboto-Regular", fontSize: 12, color: Colors.grey),)
+                    Text(
+                      "Invalid Article",
+                      style:
+                          TextStyle(fontFamily: "Roboto-Regular", fontSize: 25),
+                    ),
+                    Text(
+                      "Please contact to the administrator.",
+                      style: TextStyle(
+                          fontFamily: "Roboto-Regular",
+                          fontSize: 12,
+                          color: Colors.grey),
+                    )
                   ],
                 )),
                 SizedBox(
@@ -52,10 +65,10 @@ class _ScannerPageState extends State<ScannerPage> {
                     },
                     style: ElevatedButton.styleFrom(
                         textStyle:
-                        const TextStyle(fontFamily: "Roboto-Regular"),
+                            const TextStyle(fontFamily: "Roboto-Regular"),
                         shape: const RoundedRectangleBorder(
                             borderRadius:
-                            BorderRadius.all(Radius.circular(3)))),
+                                BorderRadius.all(Radius.circular(3)))),
                     child: const Text("I Understand"),
                   ),
                 )
@@ -99,26 +112,40 @@ class _ScannerPageState extends State<ScannerPage> {
                           _isLoading = true;
                         });
                         _scannerController.stop();
-                        var captureData = capture.barcodes.first.rawValue?.toString();
-                        final String qrCheckerUrl = "${dotenv.env['API_URL']}settings/appArticles.php?article=${captureData!}";
-                        var res = await getDataWithPost(qrCheckerUrl, {
-
-                        });
+                        var captureData =
+                            capture.barcodes.first.rawValue?.toString();
+                        final String qrCheckerUrl =
+                            "${dotenv.env['API_URL']}settings/appArticles.php?article=${captureData!}&mobile=${widget._mobile!}";
+                        var res = await getDataWithPost(qrCheckerUrl, {});
                         setState(() {
-                          response = res?.body;  // Store the response body for display or further processing
+                          response = res
+                              ?.body; // Store the response body for display or further processing
                           _isLoading = false; // Hide the loader
                         });
 
                         if (response != null) {
                           if (jsonDecode(response)['task_status'] == "true") {
-                            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => SubmitScreen(jsonDecode(response)['article'], jsonDecode(response)['gender'])));
+                            if (jsonDecode(response)['editable'] == "true") {
+                              Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => EditScreen(
+                                          jsonDecode(response)['article'],
+                                          jsonDecode(response)['scheme'])));
+                            } else {
+                              Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => SubmitScreen(
+                                          jsonDecode(response)['article'],
+                                          jsonDecode(response)['scheme'])));
+                            }
                           } else {
                             _invalidQr();
                           }
                         } else {
                           _invalidQr();
                         }
-
                       },
                     ),
                     QRScannerOverlay(),
@@ -136,7 +163,8 @@ class _ScannerPageState extends State<ScannerPage> {
                                 Center(
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
                                     children: [
                                       InkWell(
                                         child: Icon(
@@ -176,7 +204,8 @@ class _ScannerPageState extends State<ScannerPage> {
                                 SizedBox(
                                   width: 70,
                                   height: 70,
-                                  child: Image.asset("assets/images/paragon_logo.png"),
+                                  child: Image.asset(
+                                      "assets/images/paragon_logo.png"),
                                 ),
                               ],
                             ),

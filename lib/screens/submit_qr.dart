@@ -8,20 +8,21 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../apis/auth.dart';
 
-
 class SizeQuantity {
   String? size;
   String? quantity;
+  // Add this line
+  TextEditingController quantityController;
 
-  SizeQuantity({this.size, this.quantity});
+  SizeQuantity({this.size, this.quantity})
+      : quantityController = TextEditingController(text: quantity);
 }
-
 
 class SubmitScreen extends StatefulWidget {
   final String article;
-  final String gender;
+  final String slicker;
 
-  const SubmitScreen(this.article, this.gender, {super.key});
+  const SubmitScreen(this.article, this.slicker, {super.key});
 
   @override
   State<SubmitScreen> createState() => _SubmitScreenState();
@@ -37,13 +38,12 @@ class _SubmitScreenState extends State<SubmitScreen> {
   List<String?> selectedSizes = [null];
   List<SizeQuantity> sizeQuantities = [SizeQuantity()];
 
-
   final TextEditingController _articleInput = TextEditingController();
 
   final TextEditingController _typeInput = TextEditingController();
 
   final _typeSelection = ["Set", "Pair", "Carton"];
-  List<String>  _sizeSelection = [];
+  List<String> _sizeSelection = [];
 
   @override
   void initState() {
@@ -59,12 +59,11 @@ class _SubmitScreenState extends State<SubmitScreen> {
     var _userJson = jsonDecode(jsonDecode(usersData!));
     setState(() {
       _userName = _userJson['name'];
-      _userType = _userJson['user_type'];
+      _userType = _userJson['user_type'] == "admin" ? _userJson['user_type'] : _userJson['retailType'] ;
     });
   }
 
   Future<void> _getSize() async {
-
     setState(() {
       _isLoading = true;
     });
@@ -79,7 +78,7 @@ class _SubmitScreenState extends State<SubmitScreen> {
     if (response != null) {
       var _decodedResponse = jsonDecode(response);
       if (_decodedResponse['task_status'] == "true") {
-        _sizeSelection = List<String>.from(_decodedResponse['gender']);
+        _sizeSelection = List<String>.from(_decodedResponse['sizes']);
       } else {
         _showButton = false;
       }
@@ -102,9 +101,8 @@ class _SubmitScreenState extends State<SubmitScreen> {
         actions: <Widget>[
           ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF0056cd),
-                foregroundColor: Colors.white
-              ),
+                  backgroundColor: const Color(0xFF0056cd),
+                  foregroundColor: Colors.white),
               onPressed: _showButton
                   ? () async {
                       if (_formKey.currentState!.validate()) {
@@ -116,14 +114,17 @@ class _SubmitScreenState extends State<SubmitScreen> {
                             await SharedPreferencesAsync();
                         final String? usersData =
                             await _asyncPrefs.getString('user');
-                        final String? _server = await _asyncPrefs.getString('server')!;
-                        final String? _serverkey = await _asyncPrefs.getString('serverkey')!;
+                        final String? _server =
+                            await _asyncPrefs.getString('server')!;
+                        final String? _serverkey =
+                            await _asyncPrefs.getString('serverkey')!;
                         var _userJson = jsonDecode(jsonDecode(usersData!));
                         final String _sumbmitUrl =
-                            "${dotenv.env['API_URL']}csv/csvCreateDynamic.php?key=${widget.gender!}";
+                            "${dotenv.env['API_URL']}csv/csvCreateDynamic.php?key=${widget.slicker}";
 
                         var consumerData = sizeQuantities
-                            .map((sq) => {"size": sq.size, "quantity": sq.quantity})
+                            .map((sq) =>
+                                {"size": sq.size, "quantity": sq.quantity})
                             .toList();
                         String consumerDataString = jsonEncode(consumerData);
 
@@ -136,7 +137,7 @@ class _SubmitScreenState extends State<SubmitScreen> {
                           "retailType": _userJson['retailType'],
                           "type": _typeInput.text,
                           "town": _userJson['town'],
-                          "consumer" : widget.gender,
+                          "consumer": widget.slicker,
                           "consumerSizes": consumerDataString,
                           "serverkey": _serverkey,
                           "server": _server
@@ -368,57 +369,59 @@ class _SubmitScreenState extends State<SubmitScreen> {
                         padding: const EdgeInsets.all(0),
                         width: double.infinity,
                         child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                              textStyle:
-                              const TextStyle(fontFamily: "Roboto-Regular"),
-                              shape: const RoundedRectangleBorder(
-                                  borderRadius:
-                                  BorderRadius.all(Radius.circular(3)))),
-                          onPressed: () {},
-                          child:Stack(
-                            children: [
-                              ListTile(
-                                leading: const CircleAvatar(
-                                  child: Icon(Icons.person),
+                            style: ElevatedButton.styleFrom(
+                                textStyle: const TextStyle(
+                                    fontFamily: "Roboto-Regular"),
+                                shape: const RoundedRectangleBorder(
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(3)))),
+                            onPressed: () {},
+                            child: Stack(
+                              children: [
+                                ListTile(
+                                  leading: const CircleAvatar(
+                                    child: Icon(Icons.person),
+                                  ),
+                                  title: Text(
+                                    _userName ?? "Unknown",
+                                    style: const TextStyle(
+                                        fontFamily: "Roboto-Regular"),
+                                  ),
+                                  subtitle: Text(
+                                    _userType ?? "Unknown",
+                                    style: const TextStyle(
+                                        fontFamily: "Roboto-Regular"),
+                                  ),
+                                  trailing: const Icon(Icons.arrow_drop_down),
                                 ),
-                                title: Text(
-                                  _userName ?? "Unknown",
-                                  style: const TextStyle(fontFamily: "Roboto-Regular"),
-                                ),
-                                subtitle: Text(
-                                  _userType ?? "Unknown",
-                                  style: const TextStyle(fontFamily: "Roboto-Regular"),
-                                ),
-                                trailing: const Icon(Icons.arrow_drop_down),
-                              ),
 
-                              // Banner on top-left of ListTile
-                              Positioned(
-                                top: 0,
-                                left: 0,
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                  decoration: BoxDecoration(
-                                    color: Colors.blue, // banner color
-                                    borderRadius: const BorderRadius.only(
-                                      topLeft: Radius.circular(4),
-                                      bottomRight: Radius.circular(8),
+                                // Banner on top-left of ListTile
+                                Positioned(
+                                  top: 0,
+                                  left: 0,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: Colors.blue, // banner color
+                                      borderRadius: const BorderRadius.only(
+                                        topLeft: Radius.circular(4),
+                                        bottomRight: Radius.circular(8),
+                                      ),
                                     ),
-                                  ),
-                                  child: Text(
-                                    widget.gender, // your banner text
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                      fontFamily: "Roboto-Regular",
+                                    child: Text(
+                                      widget.slicker, // your banner text
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                        fontFamily: "Roboto-Regular",
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                            ],
-                          )
-                        ),
+                              ],
+                            )),
                       ),
                       const SizedBox(
                         height: 30,
@@ -437,7 +440,9 @@ class _SubmitScreenState extends State<SubmitScreen> {
                             border: OutlineInputBorder(),
                             labelText: "Article",
                             labelStyle: TextStyle(fontFamily: "Roboto-Regular"),
-                            errorStyle: TextStyle(fontFamily: "Roboto-Regular", color: Colors.red)),
+                            errorStyle: TextStyle(
+                                fontFamily: "Roboto-Regular",
+                                color: Colors.red)),
                       ),
                       const SizedBox(
                         height: 30,
@@ -447,18 +452,18 @@ class _SubmitScreenState extends State<SubmitScreen> {
                           labelText: 'Select a type',
                           labelStyle: TextStyle(fontFamily: "Roboto-Regular"),
                           border:
-                          OutlineInputBorder(), // Adds the TextField-like border
-                          contentPadding:
-                          EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                              OutlineInputBorder(), // Adds the TextField-like border
+                          contentPadding: EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 16),
                         ),
                         items: _typeSelection.map((element) {
                           return DropdownMenuItem<String>(
                             value:
-                            element, // The value that will be passed when this item is selected
+                                element, // The value that will be passed when this item is selected
                             child: Text(
                               element,
                               style:
-                              const TextStyle(fontFamily: "Roboto-Regular"),
+                                  const TextStyle(fontFamily: "Roboto-Regular"),
                             ), // The displayed text in the dropdown menu
                           );
                         }).toList(),
@@ -488,13 +493,23 @@ class _SubmitScreenState extends State<SubmitScreen> {
                                 Expanded(
                                   flex: 2,
                                   child: DropdownSearch<String>(
-                                    items: _sizeSelection,
+                                    items: _sizeSelection
+                                        .where((s) =>
+                                            // Keep sizes not chosen OR the one currently selected in this block
+                                            !sizeQuantities
+                                                .where((sq) =>
+                                                    sq != sizeQuantities[index])
+                                                .map((sq) => sq.size)
+                                                .contains(s))
+                                        .toList(),
                                     selectedItem: sizeQuantities[index].size,
-                                    dropdownDecoratorProps: const DropDownDecoratorProps(
+                                    dropdownDecoratorProps:
+                                        const DropDownDecoratorProps(
                                       dropdownSearchDecoration: InputDecoration(
                                         border: OutlineInputBorder(),
                                         labelText: "Size",
-                                        labelStyle: TextStyle(fontFamily: "Roboto-Regular"),
+                                        labelStyle: TextStyle(
+                                            fontFamily: "Roboto-Regular"),
                                         errorStyle: TextStyle(
                                           fontFamily: "Roboto-Regular",
                                           color: Colors.red,
@@ -502,7 +517,7 @@ class _SubmitScreenState extends State<SubmitScreen> {
                                       ),
                                     ),
                                     popupProps: const PopupProps.menu(
-                                      showSearchBox: true, // ✅ search enabled
+                                      showSearchBox: true,
                                     ),
                                     onChanged: (String? newValue) {
                                       setState(() {
@@ -520,54 +535,79 @@ class _SubmitScreenState extends State<SubmitScreen> {
                                 const SizedBox(width: 10),
 
                                 // Quantity field
-                                Expanded(
-                                  flex: 2,
-                                  child: TextFormField(
-                                    initialValue: sizeQuantities[index].quantity,
-                                    keyboardType: TextInputType.number,
-                                    decoration: const InputDecoration(
-                                      border: OutlineInputBorder(),
-                                      labelText: "Quantity",
-                                      labelStyle: TextStyle(fontFamily: "Roboto-Regular"),
-                                      errorStyle: TextStyle(color: Colors.red),
-                                    ),
-                                    onChanged: (value) {
-                                      sizeQuantities[index].quantity = value;
-                                    },
-                                    validator: (value) {
-                                      if (value == null || value.isEmpty) {
-                                        return 'Please enter quantity';
-                                      }
-                                      return null;
-                                    },
+                              // In your ListView.builder's itemBuilder for the Quantity field
+                              Expanded(
+                                flex: 2,
+                                child: TextFormField(
+                                  // Change this line
+                                  controller: sizeQuantities[index].quantityController,
+                                  keyboardType: TextInputType.number,
+                                  decoration: const InputDecoration(
+                                    border: OutlineInputBorder(),
+                                    labelText: "Quantity",
+                                    labelStyle: TextStyle(fontFamily: "Roboto-Regular"),
+                                    errorStyle: TextStyle(color: Colors.red),
                                   ),
+                                  onChanged: (value) {
+                                    sizeQuantities[index].quantity = value;
+                                  },
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Please enter quantity';
+                                    }
+                                    return null;
+                                  },
                                 ),
+                              ),
                                 const SizedBox(width: 10),
 
                                 // Add / Remove button
-                                IconButton(
-                                  icon: Icon(
-                                    index == sizeQuantities.length - 1
-                                        ? Icons.add_circle
-                                        : Icons.remove_circle,
-                                    color: index == sizeQuantities.length - 1
-                                        ? Colors.green
-                                        : Colors.red,
-                                  ),
-                                  onPressed: () {
-                                    setState(() {
-                                      if (index == sizeQuantities.length - 1) {
-                                        sizeQuantities.add(SizeQuantity());
-                                      } else {
-                                        sizeQuantities.removeAt(index);
-                                      }
-                                    });
-                                  },
-                                ),
+                            // In your ListView.builder...
+                            IconButton(
+                              icon: Icon(
+                                Icons.remove_circle,
+                                color: sizeQuantities.length > 1 ? Colors.red : Colors.grey, // Change color to show if disabled
+                              ),
+                              onPressed: sizeQuantities.length > 1
+                                  ? () {
+                                setState(() {
+                                  sizeQuantities.removeAt(index);
+                                });
+                              }
+                                  : null, // Disable the button if it's the last item
+                            ),
                               ],
                             ),
                           );
                         },
+                      ),const SizedBox(height: 5),
+                      Center(
+                        // Wrap with Center to control width and keep it centered
+                        child: SizedBox(
+                          // Use SizedBox to set a maximum width
+                          width: MediaQuery.of(context).size.width *
+                              0.8, // 80% of screen width, adjust as needed
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              setState(() {
+                                sizeQuantities.add(SizeQuantity());
+                              });
+                            },
+                            icon: const Icon(Icons.add),
+                            label: const Text('Add Size & Quantity'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                              Colors.black, // Set background color to black
+                              foregroundColor:
+                              Colors.white, // Text and icon color
+                              minimumSize: const Size(double.infinity,
+                                  50), // This will now take 100% of SizedBox's width
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
                     ],
                   ),
