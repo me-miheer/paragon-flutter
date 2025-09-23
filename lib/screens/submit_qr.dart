@@ -37,12 +37,17 @@ class _SubmitScreenState extends State<SubmitScreen> {
   bool _showButton = true;
   List<String?> selectedSizes = [null];
   List<SizeQuantity> sizeQuantities = [SizeQuantity()];
+  bool _isTypeSelected = false; // ✅ Track if type already selected
+
 
   final TextEditingController _articleInput = TextEditingController();
 
   final TextEditingController _typeInput = TextEditingController();
 
-  final _typeSelection = ["Set", "Pair", "Carton"];
+  // Instead of fixed list, keep a dynamic one
+  List<String> _typeSelection = [];
+
+  List<String> _allTypes = ["Set", "Pair", "Carton"]; // ✅ Keep master list
   List<String> _sizeSelection = [];
 
   @override
@@ -60,6 +65,12 @@ class _SubmitScreenState extends State<SubmitScreen> {
     setState(() {
       _userName = _userJson['name'];
       _userType = _userJson['user_type'] == "admin" ? _userJson['user_type'] : _userJson['retailType'] ;
+      // ✅ Restrict dropdown for Dealer
+      if (_userJson['retailType'] == "Dealer") {
+        _typeSelection = ["Carton"];
+      } else {
+        _typeSelection = _allTypes;
+      }
     });
   }
 
@@ -474,11 +485,15 @@ class _SubmitScreenState extends State<SubmitScreen> {
                           }
                           return null; // No error
                         },
-                        onChanged: (String? value) {
+                        onChanged: _isTypeSelected
+                            ? null // ✅ disable after first selection
+                            : (String? value) {
                           setState(() {
                             _typeInput.text = value!;
+                            _isTypeSelected = true; // ✅ lock dropdown
                           });
                         },
+                        value: _typeInput.text.isNotEmpty ? _typeInput.text : null, // keep selected
                       ),
                       ListView.builder(
                         shrinkWrap: true,

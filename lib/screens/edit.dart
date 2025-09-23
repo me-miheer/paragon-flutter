@@ -474,9 +474,7 @@ class _EditScreenState extends State<EditScreen> {
                         height: 30,
                       ),
                       DropdownButtonFormField<String>(
-                        value: _typeInput.text.isEmpty
-                            ? null
-                            : _typeInput.text, // This is the change
+                        value: _typeInput.text.isEmpty ? null : _typeInput.text,
                         decoration: const InputDecoration(
                           labelText: 'Select a type',
                           labelStyle: TextStyle(fontFamily: "Roboto-Regular"),
@@ -495,17 +493,7 @@ class _EditScreenState extends State<EditScreen> {
                           );
                         }).toList(),
                         isExpanded: true,
-                        validator: (value) {
-                          if (value == null) {
-                            return 'Please select a type';
-                          }
-                          return null;
-                        },
-                        onChanged: (String? value) {
-                          setState(() {
-                            _typeInput.text = value!;
-                          });
-                        },
+                        onChanged: null, // 👈 disables dropdown (readonly)
                       ),
                       ListView.builder(
                         shrinkWrap: true,
