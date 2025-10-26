@@ -264,7 +264,7 @@ class _HomePageState extends State<HomePage> {
                     ["Carton", total_carton_quantity_solea.text, total_carton_quantity_vertex.text, total_carton_quantity_ptoes.text, total_carton_quantity_slikers.text],
                   ]),
                   _lister.isNotEmpty
-                  ? DetailTable(List<Map<String, dynamic>>.from(_lister))
+                  ? DetailTable(List<Map<String, dynamic>>.from(_lister),  refreshHome: reloadApi)
                       : const Center(child: Text("No data available")),
                   const SizedBox(
                     height: 30,

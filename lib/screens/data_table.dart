@@ -3,7 +3,8 @@ import 'edit.dart';
 
 class DetailTable extends StatefulWidget {
   final List<Map<String, dynamic>> data;
-  const DetailTable(this.data, {super.key});
+  final VoidCallback refreshHome;
+  const DetailTable(this.data, {super.key,required this.refreshHome});
 
   @override
   State<DetailTable> createState() => _DetailTableState();
@@ -79,7 +80,8 @@ class _DetailTableState extends State<DetailTable> {
                         MaterialPageRoute(
                           builder: (context) => EditScreen(
                             row["qr"],            // ✅ Pass article
-                            row["consumer"], // ✅ Pass size (or any extra)
+                            row["consumer"],
+                              refreshHome: widget.refreshHome// ✅ Pass size (or any extra)
                           ),
                         ),
                       );

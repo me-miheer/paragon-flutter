@@ -134,266 +134,145 @@ class _EditScreenState extends State<EditScreen> {
               actions: <Widget>[
                 ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF0056cd),
+                        backgroundColor: Colors.redAccent,
                         foregroundColor: Colors.white),
                     onPressed: _showButton
                         ? () async {
-                            if (_formKey.currentState!.validate()) {
-                              setState(() {
-                                _isLoading = true;
-                              });
-                              //   On sumit function
+                            bool? confirmDelete = await showDialog<bool>(
+                              context: context,
+                              barrierDismissible:
+                                  false, // User must tap a button
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title: const Text("Delete Article"),
+                                  content: const Text(
+                                      "Do you really want to delete this article?"),
+                                  actions: <Widget>[
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.of(context)
+                                            .pop(false); // User pressed No
+                                      },
+                                      child: const Text("No"),
+                                    ),
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.of(context)
+                                            .pop(true); // User pressed Yes
+                                      },
+                                      child: const Text("Yes"),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+
+                            // Check user choice
+                            if (confirmDelete != null && confirmDelete) {
+                              // User pressed Yes → perform delete action
                               final SharedPreferencesAsync _asyncPrefs =
                                   await SharedPreferencesAsync();
                               final String? usersData =
                                   await _asyncPrefs.getString('user');
-                              final String? _server =
-                                  await _asyncPrefs.getString('server')!;
-                              final String? _serverkey =
-                                  await _asyncPrefs.getString('serverkey')!;
                               var _userJson =
                                   jsonDecode(jsonDecode(usersData!));
-                              final String _sumbmitUrl =
-                                  "${dotenv.env['API_URL']}csv/csvUpdateDynamic.php?key=${widget.slicker!}";
-
-                              var consumerData = sizeQuantities
-                                  .map((sq) => {
-                                        "size": sq.size,
-                                        "quantity": sq.quantity
-                                      })
-                                  .toList();
-                              String consumerDataString =
-                                  jsonEncode(consumerData);
-
-                              var res = await getDataWithPost(_sumbmitUrl, {
-                                "qr": _articleInput.text,
-                                "name": _userJson['name'],
-                                "dealer": _userJson['dealer'] ?? "none",
-                                "shop": _userJson['shop'],
-                                "mobile": _userJson['mobile'],
-                                "retailType": _userJson['retailType'],
-                                "type": _typeInput.text,
-                                "town": _userJson['town'],
-                                "consumerSizes": consumerDataString,
-                              });
 
                               setState(() {
-                                response = res
-                                    ?.body; // Store the response body for display or further processing
-                                _isLoading = false; // Hide the loader
+                                _isLoading = true;
                               });
 
+                              final String mobnob = _userJson['mobile'];
+                              final String _qrDeleteUrl =
+                                  "${dotenv.env['API_URL']}csv/csvDelete.php?article=${widget.article}&mobile=${mobnob}";
+
+                              var res = await getDataWithPost(_qrDeleteUrl, {});
+
+                              
+
+                              response = res?.body;
+
                               if (response != null) {
-                                if (jsonDecode(response)['task_status'] ==
-                                    "true") {
-                                  showModalBottomSheet<void>(
+                                var _decodedResponse = jsonDecode(response);
+                                if (_decodedResponse['task_status'] == "true") {
+                                  if (widget.refreshHome != null) {
+                                    widget.refreshHome!();
+                                  }
+                                  showDialog(
                                     context: context,
-                                    isDismissible: false,
-                                    enableDrag: false,
-                                    builder: (BuildContext context) {
-                                      return SizedBox(
-                                        child: Center(
+                                    barrierDismissible: false,
+                                    builder: (BuildContext dialogContext) {
+                                      // Delayed auto-close
+                                      Future.delayed(const Duration(seconds: 1),
+                                          () {
+                                        if (Navigator.canPop(dialogContext)) {
+                                          Navigator.pop(
+                                              dialogContext); // close dialog
+                                        }
+                                        if (Navigator.canPop(context)) {
+                                          Navigator.pop(
+                                              context); // close screen
+                                        }
+                                      });
+
+                                      // **Return a widget here**
+                                      return Dialog(
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                        ),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(20),
                                           child: Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
                                             mainAxisSize: MainAxisSize.min,
-                                            children: <Widget>[
-                                              Expanded(
-                                                  child: Column(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.center,
-                                                children: [
-                                                  SizedBox(
-                                                    width: 100,
-                                                    height: 100,
-                                                    child: Image.asset(
-                                                        "assets/images/5290058.png"),
-                                                  ),
-                                                  const Text(
-                                                    "Success",
-                                                    style: TextStyle(
-                                                        fontFamily:
-                                                            "Roboto-Regular",
-                                                        fontSize: 25),
-                                                  ),
-                                                  const Text(
-                                                    "Article Updated successfully.",
-                                                    style: TextStyle(
-                                                        fontFamily:
-                                                            "Roboto-Regular",
-                                                        fontSize: 12,
-                                                        color: Colors.grey),
-                                                  )
-                                                ],
-                                              )),
+                                            children: [
                                               SizedBox(
-                                                width: double.infinity,
-                                                height: 50,
-                                                child: ElevatedButton(
-                                                  onPressed: () {
-                                                    Navigator.pop(context);
-                                                  },
-                                                  style: ElevatedButton.styleFrom(
-                                                      textStyle: const TextStyle(
-                                                          fontFamily:
-                                                              "Roboto-Regular"),
-                                                      shape: const RoundedRectangleBorder(
-                                                          borderRadius:
-                                                              BorderRadius.all(
-                                                                  Radius
-                                                                      .circular(
-                                                                          3)))),
-                                                  child: const Text("Got It"),
+                                                width: 80,
+                                                height: 80,
+                                                child: Image.asset(
+                                                    "assets/images/5290058.png"),
+                                              ),
+                                              const SizedBox(height: 15),
+                                              const Text(
+                                                "Success",
+                                                style: TextStyle(
+                                                  fontFamily: "Roboto-Regular",
+                                                  fontSize: 22,
+                                                  fontWeight: FontWeight.bold,
                                                 ),
-                                              )
+                                              ),
+                                              const SizedBox(height: 8),
+                                              const Text(
+                                                "Article deleted successfully.",
+                                                style: TextStyle(
+                                                  fontFamily: "Roboto-Regular",
+                                                  fontSize: 14,
+                                                  color: Colors.grey,
+                                                ),
+                                                textAlign: TextAlign.center,
+                                              ),
                                             ],
                                           ),
                                         ),
                                       );
                                     },
-                                  ).whenComplete(() {
-                                    Navigator.pop(context);
-                                  });
+                                  );
                                 } else {
-                                  showModalBottomSheet<void>(
-                                    context: context,
-                                    isDismissible: false,
-                                    enableDrag: false,
-                                    builder: (BuildContext context) {
-                                      return SizedBox(
-                                        child: Center(
-                                          child: Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: <Widget>[
-                                              const Expanded(
-                                                  child: Column(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.center,
-                                                children: [
-                                                  Text(
-                                                    "Something went wrong",
-                                                    style: TextStyle(
-                                                        fontFamily:
-                                                            "Roboto-Regular",
-                                                        fontSize: 25),
-                                                  ),
-                                                  Text(
-                                                    "Please try again letter.",
-                                                    style: TextStyle(
-                                                        fontFamily:
-                                                            "Roboto-Regular",
-                                                        fontSize: 12,
-                                                        color: Colors.grey),
-                                                  )
-                                                ],
-                                              )),
-                                              SizedBox(
-                                                width: double.infinity,
-                                                height: 50,
-                                                child: ElevatedButton(
-                                                  onPressed: () {
-                                                    Navigator.pop(context);
-                                                  },
-                                                  style: ElevatedButton.styleFrom(
-                                                      textStyle: const TextStyle(
-                                                          fontFamily:
-                                                              "Roboto-Regular"),
-                                                      shape: const RoundedRectangleBorder(
-                                                          borderRadius:
-                                                              BorderRadius.all(
-                                                                  Radius
-                                                                      .circular(
-                                                                          3)))),
-                                                  child: const Text(
-                                                      "I Understand"),
-                                                ),
-                                              )
-                                            ],
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  ).whenComplete(() {
-                                    Navigator.pop(context);
-                                  });
+                                  // _showButton = false;
                                 }
                               } else {
-                                showModalBottomSheet<void>(
-                                  context: context,
-                                  isDismissible: false,
-                                  enableDrag: false,
-                                  builder: (BuildContext context) {
-                                    return SizedBox(
-                                      child: Center(
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: <Widget>[
-                                            const Expanded(
-                                                child: Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.center,
-                                              children: [
-                                                Text(
-                                                  "Something went wrong",
-                                                  style: TextStyle(
-                                                      fontFamily:
-                                                          "Roboto-Regular",
-                                                      fontSize: 25),
-                                                ),
-                                                Text(
-                                                  "Please try again letter.",
-                                                  style: TextStyle(
-                                                      fontFamily:
-                                                          "Roboto-Regular",
-                                                      fontSize: 12,
-                                                      color: Colors.grey),
-                                                )
-                                              ],
-                                            )),
-                                            SizedBox(
-                                              width: double.infinity,
-                                              height: 50,
-                                              child: ElevatedButton(
-                                                onPressed: () {
-                                                  Navigator.pop(context);
-                                                },
-                                                style: ElevatedButton.styleFrom(
-                                                    textStyle: const TextStyle(
-                                                        fontFamily:
-                                                            "Roboto-Regular"),
-                                                    shape: const RoundedRectangleBorder(
-                                                        borderRadius:
-                                                            BorderRadius.all(
-                                                                Radius.circular(
-                                                                    3)))),
-                                                child:
-                                                    const Text("I Understand"),
-                                              ),
-                                            )
-                                          ],
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ).whenComplete(() {
-                                  Navigator.pop(context);
-                                });
+                                // _showButton = false;
                               }
+
+                              setState(() {
+                                _isLoading = false;
+                              });
                             }
                           }
                         : null,
-                    child: const Text("Update",
-                        style: TextStyle(fontFamily: "Roboto-Regular"))),
+                    child: const Icon(
+                      Icons.delete,
+                      color: Colors.white, // Icon color
+                    )),
                 Container(
                   width: 15,
                 )
@@ -717,7 +596,9 @@ class _EditScreenState extends State<EditScreen> {
 
                         if (response != null) {
                           if (jsonDecode(response)['task_status'] == "true") {
-                            widget.refreshHome!();
+                            if (widget.refreshHome != null) {
+                              widget.refreshHome!();
+                            }
                             showDialog(
                               context: context,
                               barrierDismissible: false,
