@@ -30,6 +30,7 @@ class SubmitScreen extends StatefulWidget {
 }
 
 class _SubmitScreenState extends State<SubmitScreen> {
+  late SharedPreferences _prefs;
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
   var _userName;
@@ -56,6 +57,19 @@ class _SubmitScreenState extends State<SubmitScreen> {
     _articleInput.text = widget.article;
     _setUser();
     _getSize();
+    _loadSavedType();
+  }
+
+
+  Future<void> _loadSavedType() async {
+    _prefs = await SharedPreferences.getInstance();
+    String? savedType = _prefs.getString('selected_type');
+    if (savedType != null && savedType.isNotEmpty) {
+      setState(() {
+        _typeInput.text = savedType;
+        _isTypeSelected = false; // lock dropdown if you want
+      });
+    }
   }
 
   Future<void> _setUser() async {
@@ -238,14 +252,16 @@ class _SubmitScreenState extends State<SubmitScreen> {
                                 return null; // No error
                               },
                               onChanged: _isTypeSelected
-                                  ? null // ✅ disable after first selection
-                                  : (String? value) {
-                                      setState(() {
-                                        _typeInput.text = value!;
-                                        _isTypeSelected =
-                                            true; // ✅ lock dropdown
-                                      });
-                                    },
+                                  ? null
+                                  : (String? value) async {
+                                if (value == null) return;
+                                setState(() {
+                                  _typeInput.text = value;
+                                  _isTypeSelected = true;
+                                });
+                                // Save to SharedPreferences
+                                await _prefs.setString('selected_type', value);
+                              },
                               value: _typeInput.text.isNotEmpty
                                   ? _typeInput.text
                                   : null, // keep selected
