@@ -12,7 +12,8 @@ import '../apis/auth.dart';
 
 class ScannerPage extends StatefulWidget {
   final String _mobile;
-  const ScannerPage(this._mobile, {super.key});
+  final VoidCallback refreshHome;
+  const ScannerPage(this._mobile, {super.key, required this.refreshHome});
 
   @override
   State<ScannerPage> createState() => _ScannerPageState();
@@ -131,14 +132,14 @@ class _ScannerPageState extends State<ScannerPage> {
                                   MaterialPageRoute(
                                       builder: (context) => EditScreen(
                                           jsonDecode(response)['article'],
-                                          jsonDecode(response)['scheme'])));
+                                          jsonDecode(response)['scheme'], refreshHome: widget.refreshHome)));
                             } else {
                               Navigator.pushReplacement(
                                   context,
                                   MaterialPageRoute(
                                       builder: (context) => SubmitScreen(
                                           jsonDecode(response)['article'],
-                                          jsonDecode(response)['scheme'])));
+                                          jsonDecode(response)['scheme'], refreshHome: widget.refreshHome)));
                             }
                           } else {
                             _invalidQr();

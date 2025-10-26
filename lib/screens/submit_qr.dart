@@ -21,8 +21,9 @@ class SizeQuantity {
 class SubmitScreen extends StatefulWidget {
   final String article;
   final String slicker;
+  final VoidCallback? refreshHome;
 
-  const SubmitScreen(this.article, this.slicker, {super.key});
+  const SubmitScreen(this.article, this.slicker, {super.key, this.refreshHome});
 
   @override
   State<SubmitScreen> createState() => _SubmitScreenState();

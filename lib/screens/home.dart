@@ -279,7 +279,7 @@ class _HomePageState extends State<HomePage> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           Navigator.push(context,
-              MaterialPageRoute(builder: (context) => ScannerPage(_userMobile.text)));
+              MaterialPageRoute(builder: (context) => ScannerPage(_userMobile.text, refreshHome: reloadApi)));
         },
         label: const Text(
           "Scan QR",
