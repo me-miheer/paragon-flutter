@@ -7,6 +7,7 @@ import 'package:paragon/extensions/loader.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../apis/auth.dart';
+import '../extensions/snackbar.dart';
 
 class SizeQuantity {
   String? size;
@@ -546,71 +547,7 @@ class _SubmitScreenState extends State<SubmitScreen> {
                       );
 
                     } else {
-                      showModalBottomSheet<void>(
-                        context: context,
-                        isDismissible: false,
-                        enableDrag: false,
-                        builder: (BuildContext context) {
-                          return SizedBox(
-                            child: Center(
-                              child: Column(
-                                mainAxisAlignment:
-                                MainAxisAlignment.center,
-                                mainAxisSize: MainAxisSize.min,
-                                children: <Widget>[
-                                  const Expanded(
-                                      child: Column(
-                                        mainAxisAlignment:
-                                        MainAxisAlignment.center,
-                                        crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            "Something went wrong",
-                                            style: TextStyle(
-                                                fontFamily:
-                                                "Roboto-Regular",
-                                                fontSize: 25),
-                                          ),
-                                          Text(
-                                            "Please try again letter.",
-                                            style: TextStyle(
-                                                fontFamily:
-                                                "Roboto-Regular",
-                                                fontSize: 12,
-                                                color: Colors.grey),
-                                          )
-                                        ],
-                                      )),
-                                  SizedBox(
-                                    width: double.infinity,
-                                    height: 50,
-                                    child: ElevatedButton(
-                                      onPressed: () {
-                                        Navigator.pop(context);
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                          textStyle: const TextStyle(
-                                              fontFamily:
-                                              "Roboto-Regular"),
-                                          shape: const RoundedRectangleBorder(
-                                              borderRadius:
-                                              BorderRadius.all(
-                                                  Radius
-                                                      .circular(
-                                                      3)))),
-                                      child: const Text(
-                                          "I Understand"),
-                                    ),
-                                  )
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                      ).whenComplete(() {
-                        Navigator.pop(context);
-                      });
+                      showSnackBar(context, jsonDecode(response)['message'], "OK");
                     }
                   } else {
                     showModalBottomSheet<void>(
