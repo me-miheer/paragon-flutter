@@ -293,7 +293,7 @@ class _HomePageState extends State<HomePage> {
 
 // Scheme Table
 Widget _buildSchemeTable(final List<List<String>> _rows) {
-  final headers = ["Total Qty", "Solea", "Vertex", "P-Toes", "Slickers"];
+  final headers = ["Total Qty", "Scheme 1", "Scheme 2", "Scheme 3", "Scheme 4"];
   final rows = _rows;
 
   return Card(
