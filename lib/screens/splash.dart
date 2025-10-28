@@ -25,7 +25,7 @@ class _SplashScreenState extends State<SplashScreen> {
     checkUpdates();
   }
 
-  final String appVersion = "3.0.2";
+  final String appVersion = "3.0.3";
 
   Future<void> _launchUrl(BuildContext context, String url) async {
     final Uri uri = Uri.parse(url);
