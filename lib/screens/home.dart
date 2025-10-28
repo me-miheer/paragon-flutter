@@ -332,9 +332,9 @@ Widget _buildSchemeTable(final List<List<String>> _rows) {
             headingTextStyle: const TextStyle(
               fontWeight: FontWeight.bold,
               color: Colors.black87,
-              fontSize: 12
+              fontSize: 10
             ),
-            dataTextStyle: const TextStyle(fontSize: 13),
+            dataTextStyle: const TextStyle(fontSize: 10),
             columnSpacing: 12,
             horizontalMargin: 12,
             border: TableBorder(
